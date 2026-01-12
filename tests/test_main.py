@@ -1,7 +1,8 @@
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from web_extraction_agent.main import handler, APIKeyError
+import pytest
+
+from web_extraction_agent.main import APIKeyError, handler
 
 
 @pytest.mark.asyncio
@@ -15,8 +16,10 @@ async def test_handler_returns_response():
     mock_response.status = "COMPLETED"
 
     # Mock _initialized to skip initialization and run_agent to return our mock
-    with patch("web_extraction_agent.main._initialized", True), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response):
+    with (
+        patch("web_extraction_agent.main._initialized", True),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response),
+    ):
         result = await handler(messages)
 
     # Verify we get a result back
@@ -36,8 +39,10 @@ async def test_handler_with_multiple_messages():
     mock_response = MagicMock()
     mock_response.run_id = "test-run-id-2"
 
-    with patch("web_extraction_agent.main._initialized", True), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response) as mock_run:
+    with (
+        patch("web_extraction_agent.main._initialized", True),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response) as mock_run,
+    ):
         result = await handler(messages)
 
     # Verify run_agent was called
@@ -56,10 +61,12 @@ async def test_handler_initialization():
     mock_response.status = "COMPLETED"
 
     # Start with _initialized as False to test initialization path
-    with patch("web_extraction_agent.main._initialized", False), \
-         patch("web_extraction_agent.main.initialize_agent", new_callable=AsyncMock) as mock_init, \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response) as mock_run, \
-         patch("web_extraction_agent.main._init_lock", new_callable=MagicMock()) as mock_lock:
+    with (
+        patch("web_extraction_agent.main._initialized", False),
+        patch("web_extraction_agent.main.initialize_agent", new_callable=AsyncMock) as mock_init,
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response) as mock_run,
+        patch("web_extraction_agent.main._init_lock", new_callable=MagicMock()) as mock_lock,
+    ):
         # Configure the lock to work as an async context manager
         mock_lock_instance = MagicMock()
         mock_lock_instance.__aenter__ = AsyncMock(return_value=None)
@@ -86,10 +93,12 @@ async def test_handler_race_condition_prevention():
     mock_response = MagicMock()
 
     # Test with multiple concurrent calls
-    with patch("web_extraction_agent.main._initialized", False), \
-         patch("web_extraction_agent.main.initialize_agent", new_callable=AsyncMock) as mock_init, \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response), \
-         patch("web_extraction_agent.main._init_lock", new_callable=MagicMock()) as mock_lock:
+    with (
+        patch("web_extraction_agent.main._initialized", False),
+        patch("web_extraction_agent.main.initialize_agent", new_callable=AsyncMock) as mock_init,
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response),
+        patch("web_extraction_agent.main._init_lock", new_callable=MagicMock()) as mock_lock,
+    ):
         # Configure the lock to work as an async context manager
         mock_lock_instance = MagicMock()
         mock_lock_instance.__aenter__ = AsyncMock(return_value=None)
@@ -118,8 +127,10 @@ async def test_handler_with_web_extraction_query():
     mock_response.run_id = "web-extract-run-id"
     mock_response.content = "Web extraction completed successfully."
 
-    with patch("web_extraction_agent.main._initialized", True), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response):
+    with (
+        patch("web_extraction_agent.main._initialized", True),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response),
+    ):
         result = await handler(messages)
 
     assert result is not None
@@ -137,11 +148,13 @@ async def test_handler_requires_api_key():
     mock_lock_instance.__aenter__ = AsyncMock(return_value=None)
     mock_lock_instance.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("web_extraction_agent.main._initialized", False), \
-         patch("web_extraction_agent.main.initialize_agent", side_effect=APIKeyError("No API key")), \
-         patch("web_extraction_agent.main._init_lock", return_value=mock_lock_instance), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock), \
-         pytest.raises(APIKeyError, match="No API key"):
+    with (
+        patch("web_extraction_agent.main._initialized", False),
+        patch("web_extraction_agent.main.initialize_agent", side_effect=APIKeyError("No API key")),
+        patch("web_extraction_agent.main._init_lock", return_value=mock_lock_instance),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock),
+        pytest.raises(APIKeyError, match="No API key"),
+    ):
         await handler(messages)
 
 
@@ -150,9 +163,11 @@ async def test_handler_agent_not_initialized():
     """Test that handler raises error when agent is not initialized."""
     messages = [{"role": "user", "content": "Test"}]
 
-    with patch("web_extraction_agent.main._initialized", True), \
-         patch("web_extraction_agent.main.run_agent", side_effect=RuntimeError("Agent not initialized")), \
-         pytest.raises(RuntimeError, match="Agent not initialized"):
+    with (
+        patch("web_extraction_agent.main._initialized", True),
+        patch("web_extraction_agent.main.run_agent", side_effect=RuntimeError("Agent not initialized")),
+        pytest.raises(RuntimeError, match="Agent not initialized"),
+    ):
         await handler(messages)
 
 
@@ -166,11 +181,13 @@ async def test_handler_with_exa_api_key_missing():
     mock_lock_instance.__aenter__ = AsyncMock(return_value=None)
     mock_lock_instance.__aexit__ = AsyncMock(return_value=None)
 
-    with patch("web_extraction_agent.main._initialized", False), \
-         patch("web_extraction_agent.main.initialize_agent", side_effect=APIKeyError("Exa API key required")), \
-         patch("web_extraction_agent.main._init_lock", return_value=mock_lock_instance), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock), \
-         pytest.raises(APIKeyError, match="Exa API key required"):
+    with (
+        patch("web_extraction_agent.main._initialized", False),
+        patch("web_extraction_agent.main.initialize_agent", side_effect=APIKeyError("Exa API key required")),
+        patch("web_extraction_agent.main._init_lock", return_value=mock_lock_instance),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock),
+        pytest.raises(APIKeyError, match="Exa API key required"),
+    ):
         await handler(messages)
 
 
@@ -188,8 +205,10 @@ async def test_handler_with_product_extraction_query():
     mock_response.run_id = "product-extract-run-id"
     mock_response.content = "Product information extracted."
 
-    with patch("web_extraction_agent.main._initialized", True), \
-         patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response):
+    with (
+        patch("web_extraction_agent.main._initialized", True),
+        patch("web_extraction_agent.main.run_agent", new_callable=AsyncMock, return_value=mock_response),
+    ):
         result = await handler(messages)
 
     assert result is not None

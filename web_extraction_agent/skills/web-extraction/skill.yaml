@@ -307,7 +307,7 @@ documentation:
     Usage example:
     ```python
     from web_extraction_agent.main import handler
-    
+
     result = await handler([
         {"role": "user", "content": "Extract information from https://www.example.com"}
     ])

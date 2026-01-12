@@ -11,24 +11,24 @@
 
 from web_extraction_agent.__version__ import __version__
 from web_extraction_agent.main import (
+    APIKeyError,
+    ContentSection,
+    PageInformation,
+    cleanup,
     handler,
     initialize_agent,
     main,
     run_agent,
-    cleanup,
-    APIKeyError,
-    ContentSection,
-    PageInformation,
 )
 
 __all__ = [
-    "__version__",
-    "handler",
-    "initialize_agent",
-    "run_agent",
-    "cleanup",
-    "main",
     "APIKeyError",
     "ContentSection",
     "PageInformation",
+    "__version__",
+    "cleanup",
+    "handler",
+    "initialize_agent",
+    "main",
+    "run_agent",
 ]

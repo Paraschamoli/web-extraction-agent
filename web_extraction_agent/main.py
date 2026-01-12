@@ -15,7 +15,7 @@ import json
 import os
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Optional
+from typing import Any
 
 from agno.agent import Agent
 from agno.models.openrouter import OpenRouter
@@ -25,7 +25,6 @@ from agno.tools.mem0 import Mem0Tools
 from bindu.penguin.bindufy import bindufy
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
-from rich.pretty import pprint
 
 # Load environment variables from .env file
 load_dotenv()
@@ -43,7 +42,7 @@ class APIKeyError(ValueError):
 class ContentSection(BaseModel):
     """Represents a section of content from the webpage."""
 
-    heading: Optional[str] = Field(None, description="Section heading")
+    heading: str | None = Field(None, description="Section heading")
     content: str = Field(..., description="Section content text")
 
 
@@ -52,22 +51,12 @@ class PageInformation(BaseModel):
 
     url: str = Field(..., description="URL of the page")
     title: str = Field(..., description="Title of the page")
-    description: Optional[str] = Field(
-        None, description="Meta description or summary of the page"
-    )
-    features: Optional[list[str]] = Field(None, description="Key feature list")
-    content_sections: Optional[list[ContentSection]] = Field(
-        None, description="Main content sections of the page"
-    )
-    links: Optional[dict[str, str]] = Field(
-        None, description="Important links found on the page with description"
-    )
-    contact_info: Optional[dict[str, str]] = Field(
-        None, description="Contact information if available"
-    )
-    metadata: Optional[dict[str, str]] = Field(
-        None, description="Important metadata from the page"
-    )
+    description: str | None = Field(None, description="Meta description or summary of the page")
+    features: list[str] | None = Field(None, description="Key feature list")
+    content_sections: list[ContentSection] | None = Field(None, description="Main content sections of the page")
+    links: dict[str, str] | None = Field(None, description="Important links found on the page with description")
+    contact_info: dict[str, str] | None = Field(None, description="Contact information if available")
+    metadata: dict[str, str] | None = Field(None, description="Important metadata from the page")
 
 
 def load_config() -> dict:
@@ -172,8 +161,7 @@ def _setup_tools(
     # ExaTools is required for web content extraction
     if not exa_api_key:
         error_msg = (
-            "Exa API key is required. Set EXA_API_KEY environment variable.\n"
-            "Get an API key from: https://exa.ai"
+            "Exa API key is required. Set EXA_API_KEY environment variable.\nGet an API key from: https://exa.ai"
         )
         raise APIKeyError(error_msg)
 
@@ -200,7 +188,7 @@ def _setup_tools(
             print(f"⚠️  Firecrawl initialization issue: {e}")
             print("⚠️  Continuing without Firecrawl (Exa will be used for extraction)")
     else:
-        print("ℹ️  Firecrawl disabled or no API key provided")
+        print("Info: Firecrawl disabled or no API key provided")
 
     # Mem0 is optional for conversation memory
     if mem0_api_key:
@@ -246,10 +234,10 @@ async def initialize_agent() -> None:
         description=dedent("""\
             You are a professional web researcher and content extractor with expertise in
             transforming unstructured web content into organized, structured data.
-            
+
             You combine web scraping capabilities with intelligent analysis to extract
             comprehensive information from web pages and present it in a structured format.
-            
+
             IMPORTANT: You must output your responses in a structured JSON format that matches
             the PageInformation schema. Your output should be valid JSON that can be parsed
             into the PageInformation model.
@@ -402,9 +390,7 @@ def _display_configuration_info() -> None:
 
 def main() -> None:
     """Run the main entry point for the Web Extraction Agent."""
-    parser = argparse.ArgumentParser(
-        description="Web Extraction Agent - Transform web content into structured data"
-    )
+    parser = argparse.ArgumentParser(description="Web Extraction Agent - Transform web content into structured data")
     parser.add_argument(
         "--openrouter-api-key",
         type=str,

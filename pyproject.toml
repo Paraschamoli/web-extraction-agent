@@ -38,7 +38,7 @@ classifiers = [
 [project.urls]
 Homepage = "https://Paraschamoli.github.io/web-extraction-agent/"
 Repository = "https://github.com/Paraschamoli/web-extraction-agent"
-Documentation = "https://Paraschamoli.github.io/web-extraction-agent/"
+Documentation = "https://github.com/Paraschamoli/web-extraction-agent#readme"
 Issues = "https://github.com/Paraschamoli/web-extraction-agent/issues"
 Changelog = "https://github.com/Paraschamoli/web-extraction-agent/releases"
 

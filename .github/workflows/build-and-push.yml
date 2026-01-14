@@ -120,7 +120,7 @@ jobs:
                 "build_number": $build_number
               },
               "metadata": {
-                "documentation_url": "https://Paraschamoli.github.io/web-extraction-agent/",
+                "documentation_url": "https://github.com/Paraschamoli/web-extraction-agent#readme",
                 "domain": "data_processing",
                 "specialization": "web-extraction",
                 "last_updated": $last_updated,
